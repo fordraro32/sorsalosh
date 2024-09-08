@@ -54,9 +54,12 @@ def main():
                 prompt = input("Enter your code generation prompt: ")
                 input_ids = tokenizer.encode(prompt, return_tensors="pt").to(adapter.device)
                 attention_mask = torch.ones_like(input_ids)
-                generated_code = adapter.generate(input_ids, attention_mask, language)
-                print(f"Generated {language.capitalize()} Code:")
-                print(generated_code)
+                refactored_code, suggestions = adapter.generate(input_ids, attention_mask, language)
+                print(f"\nGenerated and Refactored {language.capitalize()} Code:")
+                print(refactored_code)
+                print("\nOptimization Suggestions:")
+                for i, suggestion in enumerate(suggestions, 1):
+                    print(f"{i}. {suggestion}")
         elif choice == '4':
             print("Exiting the program. Goodbye!")
             break
