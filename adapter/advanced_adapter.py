@@ -2,10 +2,13 @@ import torch
 import torch.nn as nn
 from .context_aware_generation import ContextAwareGeneration
 from .memory_management import MemoryManager
-from .multi_gpu_utils import distribute_model
 from .semantic_understanding import SemanticUnderstanding
 from language_modules.python_module import PythonModule
 from language_modules.cpp_module import CppModule
+from language_modules.javascript_module import JavaScriptModule
+from language_modules.java_module import JavaModule
+from language_modules.ruby_module import RubyModule
+from language_modules.go_module import GoModule
 from utils.error_handling import ErrorHandler
 from utils.code_style_control import CodeStyleController
 
@@ -38,11 +41,16 @@ class AdvancedAdapter(nn.Module):
         self.semantic_understanding = SemanticUnderstanding()
         self.python_module = PythonModule()
         self.cpp_module = CppModule()
+        self.javascript_module = JavaScriptModule()
+        self.java_module = JavaModule()
+        self.ruby_module = RubyModule()
+        self.go_module = GoModule()
         self.error_handler = ErrorHandler()
         self.code_style_controller = CodeStyleController()
 
-        # Distribute model across available GPUs
-        self.model = distribute_model(self, config.num_gpus)
+        # Use CPU if CUDA is not available
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.to(self.device)
 
     def forward(self, x):
         x = self.adapter_layer(x)
@@ -58,6 +66,14 @@ class AdvancedAdapter(nn.Module):
             code = self.python_module.generate_code(output)
         elif language == "cpp":
             code = self.cpp_module.generate_code(output)
+        elif language == "javascript":
+            code = self.javascript_module.generate_code(output)
+        elif language == "java":
+            code = self.java_module.generate_code(output)
+        elif language == "ruby":
+            code = self.ruby_module.generate_code(output)
+        elif language == "go":
+            code = self.go_module.generate_code(output)
         else:
             raise ValueError(f"Unsupported language: {language}")
 

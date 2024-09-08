@@ -1,3 +1,4 @@
+import keyword
 import ast
 
 class PythonModule:

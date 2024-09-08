@@ -5,6 +5,8 @@ from adapter.advanced_adapter import AdvancedAdapter
 from config import AdapterConfig
 
 def load_local_model(model_path):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     return model, tokenizer
@@ -21,6 +23,7 @@ def browse_files(directory):
 def main():
     config = AdapterConfig()
     adapter = AdvancedAdapter(config)
+    print(f"Adapter using device: {adapter.device}")
 
     print("Welcome to the LLaMA 3.1 70B Advanced Adapter")
     while True:
@@ -44,11 +47,15 @@ def main():
             if 'model' not in locals():
                 print("Please load a model first (option 1)")
             else:
+                language = input("Enter the programming language (python/cpp/javascript/java/ruby/go): ").lower()
+                if language not in config.supported_languages:
+                    print(f"Unsupported language: {language}")
+                    continue
                 prompt = input("Enter your code generation prompt: ")
-                input_ids = tokenizer.encode(prompt, return_tensors="pt").to(model.device)
+                input_ids = tokenizer.encode(prompt, return_tensors="pt").to(adapter.device)
                 attention_mask = torch.ones_like(input_ids)
-                generated_code = adapter.generate(input_ids, attention_mask)
-                print("Generated Code:")
+                generated_code = adapter.generate(input_ids, attention_mask, language)
+                print(f"Generated {language.capitalize()} Code:")
                 print(generated_code)
         elif choice == '4':
             print("Exiting the program. Goodbye!")
